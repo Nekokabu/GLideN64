@@ -840,34 +840,24 @@ void OGLRender::_updateDepthUpdate() const
 		glDepthMask( FALSE );
 }
 
-void OGLRender::_updateStates(RENDER_STATE _renderState) const
+void OGLRender::_updateDepthCompare() const
 {
-	OGLVideo & ogl = video();
-
-	CombinerInfo & cmbInfo = CombinerInfo::get();
-	cmbInfo.update();
-
-	if (gSP.changed & CHANGED_GEOMETRYMODE) {
-		_updateCullFace();
-		gSP.changed &= ~CHANGED_GEOMETRYMODE;
-	}
-
 	if (config.frameBufferEmulation.N64DepthCompare) {
-		glDisable( GL_DEPTH_TEST );
-		glDepthMask( FALSE );
+		glDisable(GL_DEPTH_TEST);
+		glDepthMask(FALSE);
 	} else if ((gDP.changed & (CHANGED_RENDERMODE | CHANGED_CYCLETYPE)) != 0) {
 		if (((gSP.geometryMode & G_ZBUFFER) || gDP.otherMode.depthSource == G_ZS_PRIM) && gDP.otherMode.cycleType <= G_CYC_2CYCLE) {
 			if (gDP.otherMode.depthCompare != 0) {
 				switch (gDP.otherMode.depthMode) {
-					case ZMODE_OPA:
+				case ZMODE_OPA:
 					glDisable(GL_POLYGON_OFFSET_FILL);
 					glDepthFunc(GL_LEQUAL);
 					break;
-					case ZMODE_INTER:
+				case ZMODE_INTER:
 					glDisable(GL_POLYGON_OFFSET_FILL);
 					glDepthFunc(GL_LEQUAL);
 					break;
-					case ZMODE_XLU:
+				case ZMODE_XLU:
 					// Max || Infront;
 					glDisable(GL_POLYGON_OFFSET_FILL);
 					if (gDP.otherMode.depthSource == G_ZS_PRIM && gDP.primDepth.z == 1.0f)
@@ -877,7 +867,7 @@ void OGLRender::_updateStates(RENDER_STATE _renderState) const
 						// Infront
 						glDepthFunc(GL_LESS);
 					break;
-					case ZMODE_DEC:
+				case ZMODE_DEC:
 					glEnable(GL_POLYGON_OFFSET_FILL);
 					glDepthFunc(GL_LEQUAL);
 					break;
@@ -902,6 +892,21 @@ void OGLRender::_updateStates(RENDER_STATE _renderState) const
 #endif
 		}
 	}
+}
+
+void OGLRender::_updateStates(RENDER_STATE _renderState) const
+{
+	OGLVideo & ogl = video();
+
+	CombinerInfo & cmbInfo = CombinerInfo::get();
+	cmbInfo.update();
+
+	if (gSP.changed & CHANGED_GEOMETRYMODE) {
+		_updateCullFace();
+		gSP.changed &= ~CHANGED_GEOMETRYMODE;
+	}
+
+	_updateDepthCompare();
 
 	if (gDP.changed & CHANGED_SCISSOR)
 		updateScissor(frameBufferList().getCurrent());
