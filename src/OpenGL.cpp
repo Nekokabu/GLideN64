@@ -422,6 +422,7 @@ void OGLRender::TexrectDrawer::add()
 		m_pBuffer = frameBufferList().getCurrent();
 		m_otherMode = gDP.otherMode._u64;
 		m_Z = (gDP.otherMode.depthSource == G_ZS_PRIM) ? gDP.primDepth.z : gSP.viewport.nearz;
+		m_scissor = gDP.scissor;
 
 		m_ulx = pRect[0].x;
 		m_uly = pRect[0].y;
@@ -461,6 +462,8 @@ bool OGLRender::TexrectDrawer::draw()
 		return false;
 
 	const u64 otherMode = gDP.otherMode._u64;
+	const gDPScissor scissor = gDP.scissor;
+	gDP.scissor = m_scissor;
 	gDP.otherMode._u64 = m_otherMode;
 	OGLVideo & ogl = video();
 	OGLRender & render = ogl.getRender();
@@ -563,6 +566,7 @@ bool OGLRender::TexrectDrawer::draw()
 
 	m_numRects = 0;
 	gDP.otherMode._u64 = otherMode;
+	gDP.scissor = scissor;
 	gDP.changed |= CHANGED_COMBINE | CHANGED_SCISSOR | CHANGED_RENDERMODE;
 	textureCache().activateTexture(0, pCurTex0);
 	CombinerInfo::get().update();
