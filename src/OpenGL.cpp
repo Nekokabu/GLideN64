@@ -514,6 +514,7 @@ bool OGLRender::TexrectDrawer::draw()
 	glUniform1i(m_textureFilterModeLoc, gDP.otherMode.textureFilter);
 	float texBounds[4] = { s0, t0, s1, t1 };
 	glUniform4fv(m_textureBoundsLoc, 1, texBounds);
+	glEnableVertexAttribArray(SC_TEXCOORD0);
 
 	rect[0].x = m_ulx;
 	rect[0].y = -m_lry;
@@ -1330,9 +1331,11 @@ void OGLRender::drawTexturedRect(const TexturedRectParams & _params)
 		return;
 
 	FrameBuffer * pCurrentBuffer = frameBufferList().getCurrent();
+	ShaderCombiner * pCurrentCombiner = currentCombiner();
 	TextureCache & cache = textureCache();
 	const bool bUseBilinear = (gDP.otherMode.textureFilter | (gSP.objRendermode&G_OBJRM_BILERP)) != 0;
 	const bool bUseTexrectDrawer = bUseBilinear
+		&& pCurrentCombiner->usesTexture()
 		&& (pCurrentBuffer == NULL || !pCurrentBuffer->m_cfb)
 //		&& (cache.current[0] == NULL || cache.current[0]->format == G_IM_FMT_RGBA || cache.current[0]->format == G_IM_FMT_CI)
 		&& (cache.current[0] == NULL || (cache.current[0]->frameBufferTexture == CachedTexture::fbNone && !cache.current[0]->bHDTexture))
@@ -1376,7 +1379,7 @@ void OGLRender::drawTexturedRect(const TexturedRectParams & _params)
 	} texST[2] = { { 0, 0, 0, 0 }, { 0, 0, 0, 0 } }; //struct for texture coordinates
 
 	for (u32 t = 0; t < 2; ++t) {
-		if (currentCombiner()->usesTile(t) && cache.current[t] && gSP.textureTile[t]) {
+		if (pCurrentCombiner->usesTile(t) && cache.current[t] && gSP.textureTile[t]) {
 			f32 shiftScaleS = 1.0f;
 			f32 shiftScaleT = 1.0f;
 			getTextureShiftScale(t, cache, shiftScaleS, shiftScaleT);
