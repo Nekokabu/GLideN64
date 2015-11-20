@@ -389,7 +389,7 @@ void OGLRender::TexrectDrawer::destroy()
 	m_programClean = 0;
 }
 
-bool OGLRender::TexrectDrawer::add()
+void OGLRender::TexrectDrawer::add()
 {
 	OGLVideo & ogl = video();
 	OGLRender & render = ogl.getRender();
@@ -420,8 +420,6 @@ bool OGLRender::TexrectDrawer::add()
 
 	if (m_numRects == 0) {
 		m_pBuffer = frameBufferList().getCurrent();
-		if (m_pBuffer != NULL && m_pBuffer->m_cfb)
-			return false;
 		m_otherMode = gDP.otherMode._u64;
 		m_Z = (gDP.otherMode.depthSource == G_ZS_PRIM) ? gDP.primDepth.z : gSP.viewport.nearz;
 
@@ -455,8 +453,6 @@ bool OGLRender::TexrectDrawer::add()
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_pBuffer != NULL ? m_pBuffer->m_FBO : 0);
 	gSP.changed |= CHANGED_VIEWPORT;
 	gDP.changed |= CHANGED_SCISSOR;
-	isGLError();
-	return true;
 }
 
 bool OGLRender::TexrectDrawer::draw()
