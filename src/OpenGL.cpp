@@ -472,6 +472,7 @@ bool OGLRender::TexrectDrawer::draw()
 	OGLVideo & ogl = video();
 	OGLRender & render = ogl.getRender();
 	render._setBlendMode();
+	gDP.changed |= CHANGED_RENDERMODE;  // Force update of depth compare parameters
 	render._updateDepthCompare();
 
 	int enableAlphaTest = 0;
