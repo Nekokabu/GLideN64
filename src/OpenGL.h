@@ -150,6 +150,7 @@ private:
 	void _updateViewport() const;
 	void _updateDepthUpdate() const;
 	void _updateDepthCompare() const;
+	void _updateTextures(RENDER_STATE _renderState) const;
 	void _updateStates(RENDER_STATE _renderState) const;
 	void _prepareDrawTriangle(bool _dma);
 	bool _canDraw() const;
@@ -179,6 +180,7 @@ private:
 		void destroy();
 		void add();
 		bool draw();
+		bool isEmpty();
 	private:
 		u32 m_numRects;
 		u64 m_otherMode;
