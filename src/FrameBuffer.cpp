@@ -104,7 +104,6 @@ public:
 	RDRAMtoFrameBuffer()
 		: m_uly(0)
 		, m_lry(0)
-		, m_stride(0)
 		, m_pCurBuffer(nullptr)
 		, m_pTexture(nullptr)
 		, m_PBO(0) {
@@ -123,7 +122,6 @@ private:
 		~Cleaner() {
 			m_p->m_uly = 0;
 			m_p->m_lry = 0;
-			m_p->m_stride = 0;
 			m_p->m_pCurBuffer = nullptr;
 		}
 	private:
@@ -131,7 +129,6 @@ private:
 	};
 
 	u32 m_uly, m_lry;
-	u32 m_stride;
 	FrameBuffer * m_pCurBuffer;
 	CachedTexture * m_pTexture;
 #ifndef GLES2
@@ -1549,12 +1546,13 @@ void RDRAMtoFrameBuffer::AddAddress(u32 _address)
 		m_pCurBuffer = frameBufferList().findBuffer(_address);
 		if (m_pCurBuffer == nullptr)
 			return;
-		m_stride = m_pCurBuffer->m_width << m_pCurBuffer->m_size >> 1;
-		m_uly = m_lry = (_address - m_pCurBuffer->m_startAddress) / m_stride;
+		const u32 stride = m_pCurBuffer->m_width << m_pCurBuffer->m_size >> 1;
+		m_uly = m_lry = (_address - m_pCurBuffer->m_startAddress) / stride;
 		return;
 	}
 
-	const u32 y = (_address - m_pCurBuffer->m_startAddress) / m_stride;
+	const u32 stride = m_pCurBuffer->m_width << m_pCurBuffer->m_size >> 1;
+	const u32 y = (_address - m_pCurBuffer->m_startAddress) / stride;
 	if (y < m_uly)
 		m_uly = y;
 	else if (y > m_lry)
@@ -1565,11 +1563,9 @@ void RDRAMtoFrameBuffer::CopyFromRDRAM(u32 _address, bool _bUseAlpha)
 {
 	Cleaner cleaner(this);
 
-	if (m_pCurBuffer == nullptr) {
+	if (m_pCurBuffer == nullptr)
 		m_pCurBuffer = frameBufferList().findBuffer(_address);
-		m_stride = m_pCurBuffer->m_width << m_pCurBuffer->m_size >> 1;
-	}
-	if (m_pCurBuffer == NULL || m_pCurBuffer->m_size < G_IM_SIZ_16b)
+	if (m_pCurBuffer == nullptr || m_pCurBuffer->m_size < G_IM_SIZ_16b)
 		return;
 	if (m_pCurBuffer->m_startAddress == _address && gDP.colorImage.changed != 0)
 		return;
