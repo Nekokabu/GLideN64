@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <assert.h>
 #include <math.h>
 #include "OpenGL.h"
