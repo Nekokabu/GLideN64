@@ -887,6 +887,8 @@ void gDPFullSync()
 		frameBufferList().removeAux();
 	}
 
+	video().getRender().flush();
+
 	const bool sync = config.frameBufferEmulation.copyToRDRAM == Config::ctSync;
 	if (config.frameBufferEmulation.copyToRDRAM != Config::ctDisable)
 		FrameBuffer_CopyToRDRAM(gDP.colorImage.address, sync);
@@ -895,7 +897,6 @@ void gDPFullSync()
 		if (config.frameBufferEmulation.copyDepthToRDRAM != Config::ctDisable)
 			FrameBuffer_CopyDepthBuffer(gDP.colorImage.address);
 	}
-	video().getRender().flush();
 
 	*REG.MI_INTR |= MI_INTR_DP;
 
