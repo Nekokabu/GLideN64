@@ -1357,39 +1357,45 @@ bool(*texturedRectSpecial)(const OGLRender::TexturedRectParams & _params) = NULL
 void OGLRender::drawTexturedRect(const TexturedRectParams & _params)
 {
 	gSP.changed &= ~CHANGED_GEOMETRYMODE; // Don't update cull mode
-	if (!m_texrectDrawer.isEmpty())
+	if (!m_texrectDrawer.isEmpty()) {
+		CombinerInfo::get().update();
 		_updateTextures(rsTexRect);
-	else if (gSP.changed || gDP.changed)
-		_updateStates(rsTexRect);
+		if (CombinerInfo::get().isChanged())
+			_setTexCoordArrays();
+	} else {
+		if (gSP.changed || gDP.changed)
+			_updateStates(rsTexRect);
 
-	const bool updateArrays = m_renderState != rsTexRect;
-	if (updateArrays || CombinerInfo::get().isChanged()) {
-		m_renderState = rsTexRect;
-		glDisableVertexAttribArray(SC_COLOR);
-		_setTexCoordArrays();
-	}
+		const bool updateArrays = m_renderState != rsTexRect;
+		if (updateArrays || CombinerInfo::get().isChanged()) {
+			m_renderState = rsTexRect;
+			glDisableVertexAttribArray(SC_COLOR);
+			_setTexCoordArrays();
+		}
 
-	if (updateArrays) {
+		if (updateArrays) {
 #ifdef RENDERSTATE_TEST
-		StateChanges++;
+			StateChanges++;
 #endif
-		glVertexAttrib4f(SC_COLOR, 0, 0, 0, 1);
-		glVertexAttribPointer(SC_POSITION, 4, GL_FLOAT, GL_FALSE, sizeof(GLVertex), &m_rect[0].x);
-		glVertexAttribPointer(SC_TEXCOORD0, 2, GL_FLOAT, GL_FALSE, sizeof(GLVertex), &m_rect[0].s0);
-		glVertexAttribPointer(SC_TEXCOORD1, 2, GL_FLOAT, GL_FALSE, sizeof(GLVertex), &m_rect[0].s1);
-	}
-	currentCombiner()->updateRenderState();
+			glVertexAttrib4f(SC_COLOR, 0, 0, 0, 1);
+			glVertexAttribPointer(SC_POSITION, 4, GL_FLOAT, GL_FALSE, sizeof(GLVertex), &m_rect[0].x);
+			glVertexAttribPointer(SC_TEXCOORD0, 2, GL_FLOAT, GL_FALSE, sizeof(GLVertex), &m_rect[0].s0);
+			glVertexAttribPointer(SC_TEXCOORD1, 2, GL_FLOAT, GL_FALSE, sizeof(GLVertex), &m_rect[0].s1);
+		}
 
-	if (RSP.cmd == 0xE4 && texturedRectSpecial != NULL && texturedRectSpecial(_params)) {
-		gSP.changed |= CHANGED_GEOMETRYMODE;
-		return;
+		if (RSP.cmd == 0xE4 && texturedRectSpecial != NULL && texturedRectSpecial(_params)) {
+			gSP.changed |= CHANGED_GEOMETRYMODE;
+			return;
+		}
+
+		if (!_canDraw())
+			return;
 	}
 
-	if (!_canDraw())
-		return;
+	ShaderCombiner * pCurrentCombiner = currentCombiner();
+	pCurrentCombiner->updateRenderState();
 
 	FrameBuffer * pCurrentBuffer = frameBufferList().getCurrent();
-	ShaderCombiner * pCurrentCombiner = currentCombiner();
 	TextureCache & cache = textureCache();
 	const bool bUseBilinear = (gDP.otherMode.textureFilter | (gSP.objRendermode&G_OBJRM_BILERP)) != 0;
 	const bool bUseTexrectDrawer = bUseBilinear
