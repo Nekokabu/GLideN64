@@ -100,9 +100,8 @@ TxFilter::TxFilter(int maxwidth, int maxheight, int maxbpp, int options,
 	_tex1 = NULL;
 	_tex2 = NULL;
 
-	/* XXX: anything larger than 1024 * 1024 is overkill */
-	_maxwidth  = maxwidth  > 1024 ? 1024 : maxwidth;
-	_maxheight = maxheight > 1024 ? 1024 : maxheight;
+	_maxwidth  = maxwidth  > 4096 ? 4096 : maxwidth;
+	_maxheight = maxheight > 4096 ? 4096 : maxheight;
 	_maxbpp    = maxbpp;
 
 	_cacheSize = cachesize;
