@@ -515,7 +515,7 @@ void ShaderCombiner::update(bool _bForce) {
 #endif
 		}
 
-		updateFBInfo(true);
+		updateFrameBufferInfo(true);
 		updateRenderState(true);
 	}
 
@@ -654,7 +654,7 @@ void ShaderCombiner::updateTextureInfo(bool _bForce) {
 		m_uniforms.uTextureFilterMode.set(gDP.otherMode.textureFilter | (gSP.objRendermode&G_OBJRM_BILERP), _bForce);
 }
 
-void ShaderCombiner::updateFBInfo(bool _bForce) {
+void ShaderCombiner::updateFrameBufferInfo(bool _bForce) {
 	if (!usesTexture())
 		return;
 
