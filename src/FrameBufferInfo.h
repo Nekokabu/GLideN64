@@ -7,7 +7,6 @@
 # include "winlnxdefs.h"
 #endif // OS_WINDOWS
 
-#include <vector>
 #include "Types.h"
 #include "PluginAPI.h"
 
@@ -19,22 +18,12 @@ struct FrameBufferInfo
 	unsigned int height;
 };
 
-struct FrameBuffer;
-class FBInfo {
-public:
-	void Write(u32 addr, u32 size);
+void FrameBufferWrite(u32 addr, u32 size);
 
-	void WriteList(FrameBufferModifyEntry *plist, u32 size);
+void FrameBufferWriteList(FrameBufferModifyEntry *plist, u32 size);
 
-	void Read(u32 addr);
+void FrameBufferRead(u32 addr);
 
-	void GetInfo(void *pinfo);
-
-private:
-	const FrameBuffer * m_pWriteBuffer;
-	std::vector<bool> m_vecReadChunks;
-};
-
-extern FBInfo fbInfo;
+void FrameBufferGetInfo(void *pinfo);
 
 #endif // _FRAME_BUFFER_INFO_H_
