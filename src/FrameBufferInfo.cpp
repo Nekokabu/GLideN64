@@ -12,7 +12,7 @@ static const FrameBuffer * s_pWriteBuffer = nullptr;
 void FrameBufferWrite(u32 addr, u32 size)
 {
 	// TODO: remove debug print
-	debugPrint("FBWrite addr=%08lx size=%u\n", addr, size);
+	//debugPrint("FBWrite addr=%08lx size=%u\n", addr, size);
 
 	const u32 address = RSP_SegmentToPhysical(addr);
 	s_pWriteBuffer = frameBufferList().findBuffer(address);

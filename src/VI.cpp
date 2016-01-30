@@ -126,12 +126,12 @@ void VI_UpdateScreen()
 						frameBufferList().saveBuffer(*REG.VI_ORIGIN, G_IM_FMT_RGBA, size, VI.width, VI.height, true);
 				}
 			}
-			if ((((*REG.VI_STATUS) & 3) > 0) && ((config.frameBufferEmulation.copyFromRDRAM && gDP.colorImage.changed) || bCFB)) {
+			if ((((*REG.VI_STATUS) & 3) > 0) && (gDP.colorImage.changed || bCFB)) {
 				if (!bVIUpdated) {
 					VI_UpdateSize();
 					bVIUpdated = true;
 				}
-				FrameBuffer_CopyFromRDRAM(*REG.VI_ORIGIN, config.frameBufferEmulation.copyFromRDRAM && !bCFB);
+				FrameBuffer_CopyFromRDRAM(*REG.VI_ORIGIN, bCFB);
 			}
 			frameBufferList().renderBuffer(*REG.VI_ORIGIN);
 
