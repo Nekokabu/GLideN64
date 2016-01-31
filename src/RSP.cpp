@@ -209,7 +209,7 @@ void RSP_ProcessDList()
 		}
 	}
 
-	if (config.frameBufferEmulation.copyDepthToRDRAM != Config::ctDisable)
+	if (config.frameBufferEmulation.copyDepthToRDRAM != Config::ctDisable && config.frameBufferEmulation.fbInfoSupported == 0)
 		FrameBuffer_CopyDepthBuffer(gDP.colorImage.address);
 
 	RSP.busy = FALSE;

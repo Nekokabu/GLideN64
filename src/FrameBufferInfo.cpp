@@ -1,6 +1,6 @@
-#include <list>
 #include "FrameBufferInfoAPI.h"
 #include "FrameBufferInfo.h"
+#include "Config.h"
 #include "OpenGL.h"
 #include "FrameBuffer.h"
 #include "DepthBuffer.h"
@@ -39,10 +39,19 @@ void FBInfo::Read(u32 addr)
 	if (pBuffer == nullptr || pBuffer == m_pWriteBuffer)
 		return;
 
-	if (pBuffer->m_isDepthBuffer)
-		FrameBuffer_CopyDepthBufferChunk(address);
-	else
-		FrameBuffer_CopyChunkToRDRAM(address);
+	if (pBuffer->m_isDepthBuffer) {
+		if (config.frameBufferEmulation.fbInfoReadDepthChunk != 0)
+			FrameBuffer_CopyDepthBufferChunk(address);
+		else if (pBuffer != m_pReadBuffer)
+			FrameBuffer_CopyDepthBuffer(address);
+	} else {
+		if (config.frameBufferEmulation.fbInfoReadColorChunk != 0)
+			FrameBuffer_CopyChunkToRDRAM(address);
+		else if (pBuffer != m_pReadBuffer)
+			FrameBuffer_CopyToRDRAM(address, true);
+	}
+
+	m_pReadBuffer = pBuffer;
 }
 
 void FBInfo::GetInfo(void *pinfo)
@@ -50,6 +59,10 @@ void FBInfo::GetInfo(void *pinfo)
 //	debugPrint("FBGetInfo\n");
 	FrameBufferInfo * pFBInfo = (FrameBufferInfo*)pinfo;
 	memset(pFBInfo, 0, sizeof(FrameBufferInfo)* 6);
+
+	if (config.frameBufferEmulation.fbInfoDisabled != 0)
+		return;
+
 	u32 idx = 0;
 	DepthBuffer * pDepthBuffer = depthBufferList().getCurrent();
 	if (pDepthBuffer != nullptr) {
@@ -60,5 +73,6 @@ void FBInfo::GetInfo(void *pinfo)
 	}
 	frameBufferList().fillBufferInfo(&pFBInfo[idx], 6 - idx);
 
-	m_pWriteBuffer = nullptr;
+	m_pWriteBuffer = m_pReadBuffer = nullptr;
+	config.frameBufferEmulation.fbInfoSupported = 1;
 }
