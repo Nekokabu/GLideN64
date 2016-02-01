@@ -1559,7 +1559,7 @@ void RDRAMtoFrameBuffer::AddAddress(u32 _address)
 }
 
 template <typename TSrc>
-bool _copyFromRdram(TSrc* _src, u32* _dst, u32(*converter)(TSrc _c), u32 _x0, u32 _y0, u32 _width, u32 _height, u32 _maxHeight, u32 _bound, bool _bUseAlpha)
+bool _copyFromRdram(TSrc* _src, u32* _dst, u32(*converter)(TSrc _c), u32 _xor, u32 _x0, u32 _y0, u32 _width, u32 _height, u32 _maxHeight, u32 _bound, bool _bUseAlpha)
 {
 	TSrc col;
 	u32 dsty = 0;
@@ -1567,7 +1567,7 @@ bool _copyFromRdram(TSrc* _src, u32* _dst, u32(*converter)(TSrc _c), u32 _x0, u3
 	const u32 y1 = _y0 + _height;
 	for (u32 y = _y0; y < y1; ++y) {
 		for (u32 x = _x0; x < _width; ++x) {
-			const u32 idx = (x + (_maxHeight - y - 1)*_width) ^ 1;
+			const u32 idx = (x + (_maxHeight - y - 1)*_width) ^ _xor;
 			if (idx >= _bound)
 				break;
 			col = _src[idx];
@@ -1579,11 +1579,9 @@ bool _copyFromRdram(TSrc* _src, u32* _dst, u32(*converter)(TSrc _c), u32 _x0, u3
 
 	if (_bUseAlpha) {
 		// Clear buffer
-		for (u32 y = 0; y < _maxHeight; y++)
-		{
-			for (u32 x = _x0; x < _width; x++)
-			{
-				const u32 idx = (x + (_maxHeight - y - 1)*_width) ^ 1;
+		for (u32 y = 0; y < _maxHeight; y++) {
+			for (u32 x = _x0; x < _width; x++) {
+				const u32 idx = (x + (_maxHeight - y - 1)*_width) ^ _xor;
 				if (idx >= _bound)
 					break;
 				_src[idx] = 0;
@@ -1668,9 +1666,9 @@ void RDRAMtoFrameBuffer::CopyFromRDRAM(u32 _address, bool _bCFB)
 	u32 * dst = (u32*)ptr;
 	bool bCopy;
 	if (m_pCurBuffer->m_size == G_IM_SIZ_16b)
-		bCopy = _copyFromRdram((u16*)image, dst, RGBA16ToABGR32, x0, y0, width, height, maxHeight, (RDRAMSize + 1 - address) >> 1, bUseAlpha);
+		bCopy = _copyFromRdram<u16>((u16*)image, dst, RGBA16ToABGR32, 1, x0, y0, width, height, maxHeight, (RDRAMSize + 1 - address) >> 1, bUseAlpha);
 	else
-		bCopy = _copyFromRdram((u32*)image, dst, RGBA32ToABGR32, x0, y0, width, height, maxHeight, (RDRAMSize + 1 - address) >> 2, bUseAlpha);
+		bCopy = _copyFromRdram<u32>((u32*)image, dst, RGBA32ToABGR32, 0, x0, y0, width, height, maxHeight, (RDRAMSize + 1 - address) >> 2, bUseAlpha);
 
 #ifndef GLES2
 	glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER); // release the mapped buffer
